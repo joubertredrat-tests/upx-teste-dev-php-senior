@@ -3,18 +3,25 @@
 namespace Acme\Task\Controller;
 
 use Acme\Task\Model\Task;
+use Silex\ControllerCollection;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Silex\Application;
 use Silex\Api\ControllerProviderInterface;
 use Acme\Util\Database;
 
-class TaskController implements ControllerProviderInterface {
-
-    public function connect(Application $app) {
+class TaskController implements ControllerProviderInterface
+{
+    /**
+     * @param Application $app
+     * @return ControllerCollection
+     */
+    public function connect(Application $app): ControllerCollection
+    {
         $factory = $app['controllers_factory'];
-        $factory->get('/','Acme\Task\Controller\TaskController::listAction');
-        $factory->post('/add','Acme\Task\Controller\TaskController::createAction');
+        $factory->get('/', 'Acme\Task\Controller\TaskController::listAction');
+        $factory->post('/', 'Acme\Task\Controller\TaskController::createAction');
+
         return $factory;
     }
 
@@ -53,7 +60,7 @@ class TaskController implements ControllerProviderInterface {
             $task->setDescription($title);
 
             $conn = Database::getConnection();
-            $sql = "INSERT INTO tasks (description) VALUES (:title)";
+            $sql = "INSERT INTO tasks (description) VdALUES (:title)";
             $stmt = $conn->prepare($sql);
             $stmt->bindParam(':title', $title);
             $stmt->execute();
