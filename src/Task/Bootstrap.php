@@ -3,6 +3,9 @@
 namespace Acme\Task;
 
 use Acme\Task\Controller\TasksController;
+use Acme\Task\Provider\ConfigProvider;
+use Acme\Task\Provider\DatabaseProvider;
+use Acme\Task\Repository\TaskRepository;
 use Acme\Util\Database\Connection;
 use Silex\Application;
 
@@ -27,25 +30,51 @@ class Bootstrap
     {
         $this->app = $app;
         $this->enableDebug();
+        $this->registerProviders();
+        $this->dispatchRepository();
         $this->dispatchServices();
         $this->dispatchRoutes();
     }
 
-    public function enableDebug()
+    /**
+     * @return void
+     */
+    public function enableDebug(): void
     {
         $this->app['debug'] = true;
     }
 
+    /**
+     * @return void
+     */
+    public function registerProviders(): void
+    {
+        $this
+            ->app
+            ->register(
+                new ConfigProvider()
+            )
+            ->register(
+                new DatabaseProvider()
+            )
+        ;
+    }
+
+    /**
+     * @return void
+     */
+    public function dispatchRepository(): void
+    {
+        $app = $this->app;
+
+        $app['repository.task'] = function () use ($app) {
+            return new TaskRepository($app['connection.sqlite']);
+        };
+    }
+
     public function dispatchServices(): void
     {
-        $this->app['connection.sqlite'] = function () {
-            return new Connection(
-                Connection::DRIVER_SQLITE,
-                [
-                    'filepath' => '/home/dev/source/other/teste-dev-php-senior/db/task.sqlite',
-                ]
-            );
-        };
+
     }
 
     /**

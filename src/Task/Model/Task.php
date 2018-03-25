@@ -2,13 +2,24 @@
 
 namespace Acme\Task\Model;
 
-
+/**
+ * Task
+ *
+ * @package Acme\Task\Model
+ */
 class Task
 {
+    use DateTimeTrait;
+
     /**
      * @var int
      */
     private $id;
+
+    /**
+     * @var string
+     */
+    private $title;
 
     /**
      * @var string
@@ -21,49 +32,59 @@ class Task
     private $isDone;
 
     /**
-     * @return int
+     * @return int|null
      */
-    public function getId()
+    public function getId(): ?int
     {
         return $this->id;
     }
 
     /**
-     * @param int $id
+     * @return string
      */
-    public function setId($id)
+    public function getTitle(): string
     {
-        $this->id = $id;
+        return $this->title;
     }
 
     /**
-     * @return string
+     * @param string $title
      */
-    public function getDescription()
+    public function setTitle(string $title): void
+    {
+        $this->title = $title;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getDescription(): ?string
     {
         return $this->description;
     }
 
     /**
-     * @param string $description
+     * @param string|null $description
+     * @return void
      */
-    public function setDescription($description)
+    public function setDescription(?string $description): void
     {
         $this->description = $description;
     }
 
     /**
-     * @return bool
+     * @return bool|null
      */
-    public function isIsDone()
+    public function isDone(): ?bool
     {
         return $this->isDone;
     }
 
     /**
      * @param bool $isDone
+     * @return void
      */
-    public function setIsDone($isDone)
+    public function setIsDone(bool $isDone): void
     {
         $this->isDone = $isDone;
     }

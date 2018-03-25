@@ -65,7 +65,7 @@ class Connection
     /**
      * @return \PDO
      */
-    public function get(): \PDO
+    public function getPdo(): \PDO
     {
         switch ($this->getDriver()) {
             case self::DRIVER_SQLITE:
