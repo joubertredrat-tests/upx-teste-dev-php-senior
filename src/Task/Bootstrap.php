@@ -2,11 +2,11 @@
 
 namespace Acme\Task;
 
-use Acme\Task\Controller\TasksController;
+use Acme\Task\Controller\TaskController;
 use Acme\Task\Provider\ConfigProvider;
 use Acme\Task\Provider\DatabaseProvider;
 use Acme\Task\Repository\TaskRepository;
-use Acme\Util\Database\Connection;
+use Acme\Task\Service\TaskService;
 use Silex\Application;
 
 /**
@@ -72,9 +72,16 @@ class Bootstrap
         };
     }
 
+    /**
+     * @return void
+     */
     public function dispatchServices(): void
     {
+        $app = $this->app;
 
+        $app['service.task'] = function () use ($app) {
+            return new TaskService($app['repository.task']);
+        };
     }
 
     /**
@@ -84,7 +91,7 @@ class Bootstrap
     {
         $this
             ->app
-            ->mount('/tasks', new TasksController())
+            ->mount('/tasks', new TaskController())
         ;
     }
 }
