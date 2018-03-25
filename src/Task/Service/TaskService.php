@@ -5,6 +5,7 @@ namespace Acme\Task\Service;
 use Acme\Exception\Task\NotFoundError as TaskNotFoundError;
 use Acme\Task\Model\Task;
 use Acme\Task\Presenter\TaskPresenter;
+use Acme\Task\Presenter\TasksPresenter;
 use Acme\Task\Repository\TaskRepository;
 
 /**
@@ -60,5 +61,33 @@ class TaskService
     public function getTaskApi(int $id): TaskPresenter
     {
         return new TaskPresenter($this->getTask($id));
+    }
+
+    /**
+     * @return array<Task>
+     * @throws \ReflectionException
+     */
+    public function getAll(): array
+    {
+        return $this
+            ->taskRepository
+            ->getAll()
+        ;
+    }
+
+    /**
+     * @return TasksPresenter
+     * @throws \ReflectionException
+     */
+    public function getAllApi(): TasksPresenter
+    {
+        $tasksPresenter = new TasksPresenter();
+
+        /** @var Task $task */
+        foreach ($this->getAll() as $task) {
+            $tasksPresenter->addTask($task);
+        }
+
+        return $tasksPresenter;
     }
 }

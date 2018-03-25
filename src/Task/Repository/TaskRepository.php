@@ -25,7 +25,7 @@ class TaskRepository extends AbstractRepository
             ->getPdo()
         ;
 
-        $query = "SELECT * FROM task WHERE id = :id;";
+        $query = "SELECT * FROM task WHERE id = :id";
         $statement = $pdo->prepare($query);
         $statement->bindParam(":id", $id, \PDO::PARAM_INT);
 
@@ -34,25 +34,66 @@ class TaskRepository extends AbstractRepository
         $data = $statement->fetchAll();
 
         if (count($data) == 1) {
-            $reflection = new \ReflectionProperty(Task::class, 'id');
-            $reflection->setAccessible(true);
-            $reflection->setValue($task, $data[0]['id']);
-            $reflection->setAccessible(false);
-
-            $task->setTitle($data[0]['title']);
-            $task->setDescription($data[0]['description']);
-            $task->setIsDone((bool) $data[0]['isDone']);
-            $task->setCreated(
-                new \DateTime($data[0]['created'])
-            );
-
-            if ($data[0]['updated']) {
-                $task->setUpdated(
-                    new \DateTime($data[0]['updated'])
-                );
-            }
+            $this->bindDataModel($task, $data[0]);
         }
 
         return $task;
+    }
+
+    /**
+     * @return array<Task>
+     * @throws \ReflectionException
+     */
+    public function getAll(): array
+    {
+        $return = [];
+
+        $pdo = $this
+            ->getConnection()
+            ->getPdo()
+        ;
+
+        $query = "SELECT * FROM task";
+        $statement = $pdo->prepare($query);
+
+        $statement->setFetchMode(\PDO::FETCH_ASSOC);
+        $statement->execute();
+        $data = $statement->fetchAll();
+
+        if (count($data) > 0) {
+            foreach ($data as $row) {
+                $task = new Task();
+                $this->bindDataModel($task, $row);
+                $return[] = $task;
+            }
+        }
+
+        return $return;
+    }
+
+    /**
+     * @param Task $task
+     * @param array $data
+     * @throws \ReflectionException
+     */
+    private function bindDataModel(Task $task, array $data): void
+    {
+        $reflection = new \ReflectionProperty(Task::class, 'id');
+        $reflection->setAccessible(true);
+        $reflection->setValue($task, $data['id']);
+        $reflection->setAccessible(false);
+
+        $task->setTitle($data['title']);
+        $task->setDescription($data['description']);
+        $task->setIsDone((bool) $data['isDone']);
+        $task->setCreated(
+            new \DateTime($data['created'])
+        );
+
+        if ($data['updated']) {
+            $task->setUpdated(
+                new \DateTime($data['updated'])
+            );
+        }
     }
 }

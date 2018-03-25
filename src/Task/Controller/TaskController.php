@@ -10,9 +10,13 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Silex\Application;
 use Silex\Api\ControllerProviderInterface;
-use Acme\Util\Database;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * Task Controller
+ *
+ * @package Acme\Task\Controller
+ */
 class TaskController implements ControllerProviderInterface
 {
     /**
@@ -32,22 +36,25 @@ class TaskController implements ControllerProviderInterface
         return $factory;
     }
 
-    public function listAction()
+    /**
+     * @param Application $app
+     * @return JsonResponse
+     */
+    public function listAction(Application $app): JsonResponse
     {
-        $conn = Database::getConnection();
-        $results = $conn->query('SELECT * FROM tasks');
-        $response = array(
-            'tasks' => [],
-        );
+        try {
+            /** @var TaskService $service */
+            $service = $app['service.task'];
 
-        foreach ($results as $t) {
-            $response['tasks'][] = array(
-                'id' => $t['id'],
-                'title' => $t['description'],
-            );
+            $tasksPresenter = $service->getAllApi();
+            $response = $tasksPresenter->toArray();
+            $statusCode = Response::HTTP_OK;
+        } catch (\Throwable $e) {
+            $response['message'] = $e->getMessage();
+            $statusCode = Response::HTTP_INTERNAL_SERVER_ERROR;
         }
 
-        return new JsonResponse($response);
+        return new JsonResponse($response, $statusCode);
     }
 
     public function createAction()
