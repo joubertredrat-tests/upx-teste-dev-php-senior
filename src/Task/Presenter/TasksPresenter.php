@@ -18,6 +18,7 @@ class TasksPresenter
 
     /**
      * @param Task $task
+     * @return void
      */
     public function addTask(Task $task): void
     {
@@ -37,6 +38,7 @@ class TasksPresenter
 
     /**
      * @param Task $task
+     * @return void
      */
     public function removeTask(Task $task): void
     {
