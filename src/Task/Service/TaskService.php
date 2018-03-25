@@ -120,4 +120,57 @@ class TaskService
     {
         return new TaskPresenter($this->addTask($title, $description));
     }
+
+    /**
+     * @param int $id
+     * @param string|null $title
+     * @param string|null $description
+     * @param bool|null $isDone
+     * @return Task
+     * @throws TaskNotFoundError
+     * @throws \ReflectionException
+     */
+    public function updateTask(
+        int $id,
+        ?string $title,
+        ?string $description,
+        ?bool $isDone
+    ): Task {
+        $task = $this->getTask($id);
+
+        if ($title) {
+            $task->setTitle($title);
+        }
+
+        if ($description) {
+            $task->setDescription($description);
+        }
+
+        if ($isDone) {
+            $task->setIsDone($isDone);
+        }
+
+        return $this
+            ->taskRepository
+            ->update($task)
+        ;
+    }
+
+    /**
+     * @param int $id
+     * @param string|null $title
+     * @param string|null $description
+     * @param bool|null $isDone
+     * @return TaskPresenter
+     * @throws TaskNotFoundError
+     * @throws \ReflectionException
+     */
+    public function updateTaskApi(
+        int $id,
+        ?string $title,
+        ?string $description,
+        ?bool $isDone
+    ): TaskPresenter {
+        return new TaskPresenter($this->updateTask($id, $title, $description, $isDone));
+    }
 }

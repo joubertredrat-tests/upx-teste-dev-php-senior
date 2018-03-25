@@ -32,6 +32,10 @@ class TaskController implements ControllerProviderInterface
             ->get('/{id}', 'Acme\Task\Controller\TaskController::getAction')
             ->assert('id', '\d+')
         ;
+        $factory
+            ->patch('/{id}', 'Acme\Task\Controller\TaskController::updateAction')
+            ->assert('id', '\d+')
+        ;
 
         return $factory;
     }
@@ -65,16 +69,14 @@ class TaskController implements ControllerProviderInterface
     public function createAction(Application $app, Request $request): JsonResponse
     {
         try {
-            $data = $request->request->all();
+            $title = $request->get('title', null);
+            $description = $request->get('description', null);
 
             $errors = [];
 
-            if (!isset($data['title'])) {
+            if (is_null($title)) {
                 $errors[] = 'The title field is required';
             }
-
-            $title = $data['title'];
-            $description = $data['description'];
 
             if (strlen($title) < 3) {
                 $errors[] = 'The title field must have 3 or more characters';
@@ -115,6 +117,52 @@ class TaskController implements ControllerProviderInterface
             $service = $app['service.task'];
 
             $taskPresenter = $service->getTaskApi($id);
+            $response = $taskPresenter->toArray();
+            $statusCode = Response::HTTP_OK;
+        } catch (TaskNotFoundError $e) {
+            $response['message'] = $e->getMessage();
+            $statusCode = Response::HTTP_NOT_FOUND;
+        } catch (\Throwable $e) {
+            $response['message'] = $e->getMessage();
+            $statusCode = Response::HTTP_INTERNAL_SERVER_ERROR;
+        }
+
+        return new JsonResponse($response, $statusCode);
+    }
+
+    /**
+     * @param Application $app
+     * @param int $id
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function updateAction(Application $app, int $id, Request $request): JsonResponse
+    {
+        try {
+            $errors = [];
+
+            $title = $request->get('title', null);
+            $description = $request->get('description', null);
+            $isDone = $request->get('isDone', null);
+
+            if (!is_null($title) && strlen($title) < 3) {
+                $errors[] = 'The title field must have 3 or more characters';
+            }
+
+            if (!is_null($isDone) && !is_bool($isDone)) {
+                $errors[] = 'The isDone field must be boolean';
+            }
+
+            if ($errors) {
+                throw new InvalidRequestError(
+                    'Invalid request: ' . implode(', ', $errors)
+                );
+            }
+
+            /** @var TaskService $service */
+            $service = $app['service.task'];
+
+            $taskPresenter = $service->updateTaskApi($id, $title, $description, $isDone);
             $response = $taskPresenter->toArray();
             $statusCode = Response::HTTP_OK;
         } catch (TaskNotFoundError $e) {

@@ -88,7 +88,6 @@ class TaskRepository extends AbstractRepository
                 new \DateTime('now')
             );
 
-
             $query = "INSERT INTO task (title, description, isDone, created) "
                 . "VALUES (:title, :description, :isDone, :created)";
 
@@ -120,6 +119,58 @@ class TaskRepository extends AbstractRepository
             $reflection->setAccessible(true);
             $reflection->setValue($task, $pdo->lastInsertId());
             $reflection->setAccessible(false);
+        }
+
+        return $task;
+    }
+
+    /**
+     * @param Task $task
+     * @return Task
+     */
+    public function update(Task $task): Task
+    {
+        if (!is_null($task->getId())) {
+            $pdo = $this
+                ->getConnection()
+                ->getPdo()
+            ;
+
+            $task->setUpdated(
+                new \DateTime('now')
+            );
+
+            $query = "UPDATE task SET title = :title, description = :description, "
+                . "isDone = :isDone, updated = :updated WHERE id = :id";
+
+            $statement = $pdo->prepare($query);
+            $statement->bindParam(
+                ":title",
+                $task->getTitle(),
+                \PDO::PARAM_STR
+            );
+            $statement->bindParam(
+                ":description",
+                $task->getDescription(),
+                \PDO::PARAM_STR
+            );
+            $statement->bindParam(
+                ":isDone",
+                $task->isDone(),
+                \PDO::PARAM_BOOL
+            );
+            $statement->bindParam(
+                ":updated",
+                $task->getUpdated()->format('Y-m-d H:i:s'),
+                \PDO::PARAM_STR
+            );
+            $statement->bindParam(
+                ":id",
+                $task->getId(),
+                \PDO::PARAM_INT
+            );
+
+            $statement->execute();
         }
 
         return $task;
