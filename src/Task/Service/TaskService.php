@@ -90,4 +90,34 @@ class TaskService
 
         return $tasksPresenter;
     }
+
+    /**
+     * @param string $title
+     * @param string|null $description
+     * @return Task
+     * @throws \ReflectionException
+     */
+    public function addTask(string $title, ?string $description): Task
+    {
+        $task = new Task();
+        $task->setTitle($title);
+        $task->setDescription($description);
+        $task->setIsDone(false);
+
+        return $this
+            ->taskRepository
+            ->add($task)
+        ;
+    }
+
+    /**
+     * @param string $title
+     * @param string|null $description
+     * @return TaskPresenter
+     * @throws \ReflectionException
+     */
+    public function addTaskApi(string $title, ?string $description): TaskPresenter
+    {
+        return new TaskPresenter($this->addTask($title, $description));
+    }
 }

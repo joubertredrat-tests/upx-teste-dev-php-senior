@@ -3,6 +3,7 @@
 namespace Acme\Task;
 
 use Acme\Task\Controller\TaskController;
+use Acme\Task\Middleware\ApiRequestMiddleware;
 use Acme\Task\Provider\ConfigProvider;
 use Acme\Task\Provider\DatabaseProvider;
 use Acme\Task\Repository\TaskRepository;
@@ -31,6 +32,7 @@ class Bootstrap
         $this->app = $app;
         $this->enableDebug();
         $this->registerProviders();
+        $this->registerMiddleware();
         $this->dispatchRepository();
         $this->dispatchServices();
         $this->dispatchRoutes();
@@ -58,6 +60,14 @@ class Bootstrap
                 new DatabaseProvider()
             )
         ;
+    }
+
+    /**
+     * @return void
+     */
+    public function registerMiddleware(): void
+    {
+        new ApiRequestMiddleware($this->app);
     }
 
     /**

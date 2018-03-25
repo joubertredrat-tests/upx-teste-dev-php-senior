@@ -2,8 +2,8 @@
 
 namespace Acme\Task\Controller;
 
+use Acme\Exception\Api\InvalidRequestError;
 use Acme\Exception\Task\NotFoundError as TaskNotFoundError;
-use Acme\Task\Model\Task;
 use Acme\Task\Service\TaskService;
 use Silex\ControllerCollection;
 use Symfony\Component\HttpFoundation\Request;
@@ -57,35 +57,50 @@ class TaskController implements ControllerProviderInterface
         return new JsonResponse($response, $statusCode);
     }
 
-    public function createAction()
+    /**
+     * @param Application $app
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function createAction(Application $app, Request $request): JsonResponse
     {
-        $raw_data = file_get_contents("php://input");
+        try {
+            $data = $request->request->all();
 
-        $data = json_decode($raw_data, TRUE);
+            $errors = [];
 
-        $title = isset($data['title']) ? $data['title'] : NULL;
+            if (!isset($data['title'])) {
+                $errors[] = 'The title field is required';
+            }
 
-        if (strlen($title) < 3) {
-            return new JsonResponse([
-                'message' => 'The title field must have 3 or more characters'
-            ], 422);
-        } else {
-            $task = new Task();
-            $task->setDescription($title);
+            $title = $data['title'];
+            $description = $data['description'];
 
-            $conn = Database::getConnection();
-            $sql = "INSERT INTO tasks (description) VdALUES (:title)";
-            $stmt = $conn->prepare($sql);
-            $stmt->bindParam(':title', $title);
-            $stmt->execute();
+            if (strlen($title) < 3) {
+                $errors[] = 'The title field must have 3 or more characters';
+            }
 
-            $task->setId($conn->lastInsertId());
+            if ($errors) {
+                throw new InvalidRequestError(
+                    'Invalid request: ' . implode(', ', $errors)
+                );
+            }
 
-            return new JsonResponse([
-                'id' => $task->getId(),
-                'title' => $task->getDescription(),
-            ], 201);
+            /** @var TaskService $service */
+            $service = $app['service.task'];
+
+            $taskPresenter = $service->addTaskApi($title, $description);
+            $response = $taskPresenter->toArray();
+            $statusCode = Response::HTTP_CREATED;
+        } catch (InvalidRequestError $e) {
+            $response['message'] = $e->getMessage();
+            $statusCode = Response::HTTP_BAD_REQUEST;
+        } catch (\Throwable $e) {
+            $response['message'] = $e->getMessage();
+            $statusCode = Response::HTTP_INTERNAL_SERVER_ERROR;
         }
+
+        return new JsonResponse($response, $statusCode);
     }
 
     /**

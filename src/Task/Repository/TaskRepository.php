@@ -73,6 +73,60 @@ class TaskRepository extends AbstractRepository
 
     /**
      * @param Task $task
+     * @return Task
+     * @throws \ReflectionException
+     */
+    public function add(Task $task): Task
+    {
+        if (is_null($task->getId())) {
+            $pdo = $this
+                ->getConnection()
+                ->getPdo()
+            ;
+
+            $task->setCreated(
+                new \DateTime('now')
+            );
+
+
+            $query = "INSERT INTO task (title, description, isDone, created) "
+                . "VALUES (:title, :description, :isDone, :created)";
+
+            $statement = $pdo->prepare($query);
+            $statement->bindParam(
+                ":title",
+                $task->getTitle(),
+                \PDO::PARAM_STR
+            );
+            $statement->bindParam(
+                ":description",
+                $task->getDescription(),
+                \PDO::PARAM_STR
+            );
+            $statement->bindParam(
+                ":isDone",
+                $task->isDone(),
+                \PDO::PARAM_BOOL
+            );
+            $statement->bindParam(
+                ":created",
+                $task->getCreated()->format('Y-m-d H:i:s'),
+                \PDO::PARAM_STR
+            );
+
+            $statement->execute();
+
+            $reflection = new \ReflectionProperty(Task::class, 'id');
+            $reflection->setAccessible(true);
+            $reflection->setValue($task, $pdo->lastInsertId());
+            $reflection->setAccessible(false);
+        }
+
+        return $task;
+    }
+
+    /**
+     * @param Task $task
      * @param array $data
      * @throws \ReflectionException
      */
