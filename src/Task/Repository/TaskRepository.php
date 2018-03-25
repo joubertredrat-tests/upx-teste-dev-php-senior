@@ -88,7 +88,7 @@ class TaskRepository extends AbstractRepository
                 new \DateTime('now')
             );
 
-            $query = "INSERT INTO task (title, description, isDone, created) "
+            $query = "INSERT INTO task (title, description, is_done, created) "
                 . "VALUES (:title, :description, :isDone, :created)";
 
             $statement = $pdo->prepare($query);
@@ -141,7 +141,7 @@ class TaskRepository extends AbstractRepository
             );
 
             $query = "UPDATE task SET title = :title, description = :description, "
-                . "isDone = :isDone, updated = :updated WHERE id = :id";
+                . "is_done = :isDone, updated = :updated WHERE id = :id";
 
             $statement = $pdo->prepare($query);
             $statement->bindParam(
@@ -216,7 +216,7 @@ class TaskRepository extends AbstractRepository
 
         $task->setTitle($data['title']);
         $task->setDescription($data['description']);
-        $task->setIsDone((bool) $data['isDone']);
+        $task->setIsDone((bool) $data['is_done']);
         $task->setCreated(
             new \DateTime($data['created'])
         );
