@@ -36,6 +36,10 @@ class TaskController implements ControllerProviderInterface
             ->patch('/{id}', 'Acme\Task\Controller\TaskController::updateAction')
             ->assert('id', '\d+')
         ;
+        $factory
+            ->delete('/{id}', 'Acme\Task\Controller\TaskController::deleteAction')
+            ->assert('id', '\d+')
+        ;
 
         return $factory;
     }
@@ -164,6 +168,31 @@ class TaskController implements ControllerProviderInterface
 
             $taskPresenter = $service->updateTaskApi($id, $title, $description, $isDone);
             $response = $taskPresenter->toArray();
+            $statusCode = Response::HTTP_OK;
+        } catch (TaskNotFoundError $e) {
+            $response['message'] = $e->getMessage();
+            $statusCode = Response::HTTP_NOT_FOUND;
+        } catch (\Throwable $e) {
+            $response['message'] = $e->getMessage();
+            $statusCode = Response::HTTP_INTERNAL_SERVER_ERROR;
+        }
+
+        return new JsonResponse($response, $statusCode);
+    }
+
+    /**
+     * @param Application $app
+     * @param int $id
+     * @return JsonResponse
+     */
+    public function deleteAction(Application $app, int $id): JsonResponse
+    {
+        try {
+            /** @var TaskService $service */
+            $service = $app['service.task'];
+
+            $service->deleteTask($id);
+            $response = ['message' => 'Task removed'];
             $statusCode = Response::HTTP_OK;
         } catch (TaskNotFoundError $e) {
             $response['message'] = $e->getMessage();

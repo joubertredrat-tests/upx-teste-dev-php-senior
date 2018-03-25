@@ -173,4 +173,20 @@ class TaskService
     ): TaskPresenter {
         return new TaskPresenter($this->updateTask($id, $title, $description, $isDone));
     }
+
+    /**
+     * @param int $id
+     * @return bool
+     * @throws TaskNotFoundError
+     * @throws \ReflectionException
+     */
+    public function deleteTask(int $id): bool
+    {
+        $task = $this->getTask($id);
+
+        return $this
+            ->taskRepository
+            ->delete($task)
+        ;
+    }
 }

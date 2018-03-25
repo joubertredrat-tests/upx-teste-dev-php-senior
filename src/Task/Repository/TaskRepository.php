@@ -178,6 +178,32 @@ class TaskRepository extends AbstractRepository
 
     /**
      * @param Task $task
+     * @return bool
+     */
+    public function delete(Task $task): bool
+    {
+        if (!is_null($task->getId())) {
+            $pdo = $this
+                ->getConnection()
+                ->getPdo()
+            ;
+
+            $query = "DELETE FROM task WHERE id = :id";
+            $statement = $pdo->prepare($query);
+            $statement->bindParam(
+                ":id",
+                $task->getId(),
+                \PDO::PARAM_INT
+            );
+
+            $statement->execute();
+        }
+
+        return true;
+    }
+
+    /**
+     * @param Task $task
      * @param array $data
      * @throws \ReflectionException
      */
