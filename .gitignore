@@ -1,3 +1,4 @@
 vendor
-db/task.sqlite
+db/*.sqlite
+config/*.yml
 .idea
