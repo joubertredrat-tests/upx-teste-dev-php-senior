@@ -12,6 +12,7 @@ use Acme\Task\Repository\TaskRepository;
 use Acme\Task\Repository\TasksTagsRepository;
 use Acme\Task\Service\TagService;
 use Acme\Task\Service\TaskService;
+use Knp\Provider\ConsoleServiceProvider;
 use Silex\Application;
 
 /**
@@ -62,6 +63,9 @@ class Bootstrap
             )
             ->register(
                 new DatabaseProvider()
+            )
+            ->register(
+                new ConsoleServiceProvider()
             )
         ;
     }
