@@ -2,13 +2,24 @@
 
 namespace Acme\Task\Model;
 
-
+/**
+ * Task
+ *
+ * @package Acme\Task\Model
+ */
 class Task
 {
+    use DateTimeTrait;
+
     /**
      * @var int
      */
     private $id;
+
+    /**
+     * @var string
+     */
+    private $title;
 
     /**
      * @var string
@@ -21,50 +32,102 @@ class Task
     private $isDone;
 
     /**
-     * @return int
+     * @var array<Tag>
      */
-    public function getId()
+    private $tags = [];
+
+    /**
+     * @return int|null
+     */
+    public function getId(): ?int
     {
         return $this->id;
     }
 
     /**
-     * @param int $id
+     * @return string
      */
-    public function setId($id)
+    public function getTitle(): string
     {
-        $this->id = $id;
+        return $this->title;
     }
 
     /**
-     * @return string
+     * @param string $title
      */
-    public function getDescription()
+    public function setTitle(string $title): void
+    {
+        $this->title = $title;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getDescription(): ?string
     {
         return $this->description;
     }
 
     /**
-     * @param string $description
+     * @param string|null $description
+     * @return void
      */
-    public function setDescription($description)
+    public function setDescription(?string $description): void
     {
         $this->description = $description;
     }
 
     /**
-     * @return bool
+     * @return bool|null
      */
-    public function isIsDone()
+    public function isDone(): ?bool
     {
         return $this->isDone;
     }
 
     /**
      * @param bool $isDone
+     * @return void
      */
-    public function setIsDone($isDone)
+    public function setIsDone(bool $isDone): void
     {
         $this->isDone = $isDone;
+    }
+
+    /**
+     * @param Tag $tag
+     */
+    public function addTag(Tag $tag): void
+    {
+        if ($tag->getId()) {
+            $this->tags[$tag->getId()] = $tag;
+        }
+    }
+
+    /**
+     * @param Tag $tag
+     * @return bool
+     */
+    public function hasTag(Tag $tag): bool
+    {
+        return array_key_exists($tag->getId(), $this->tags);
+    }
+
+    /**
+     * @param Tag $tag
+     */
+    public function removeTag(Tag $tag): void
+    {
+        if ($this->hasTag($tag)) {
+            unset($this->tags[$tag->getId()]);
+        }
+    }
+
+    /**
+     * @return array
+     */
+    public function getTags(): array
+    {
+        return $this->tags;
     }
 }
