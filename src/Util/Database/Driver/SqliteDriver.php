@@ -78,7 +78,7 @@ class SqliteDriver implements DriverInterface
     {
         $pdo = new \PDO($this->getDsn());
 
-        if(!$pdo) {
+        if (!$pdo) {
             throw new ConnectionException(
                 sprintf(
                     'Fail to connect on sqlite dsn %s: %s',

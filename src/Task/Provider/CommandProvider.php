@@ -23,7 +23,7 @@ class CommandProvider implements ServiceProviderInterface
     public function register(Container $pimple)
     {
         if (isset($pimple['console'])) {
-            $pimple->extend('console', function(Application $console) {
+            $pimple->extend('console', function (Application $console) {
                 $console->add(
                     new DatabaseCreateCommand()
                 );

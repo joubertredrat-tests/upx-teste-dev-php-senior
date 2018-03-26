@@ -44,8 +44,8 @@ class SchemaCreateCommand extends Command
                 `is_done` INTEGER NOT NULL,
                 `created` TEXT NOT NULL,
                 `updated` TEXT
-            );'
-        );
+            );')
+        ;
 
         $pdo->query('CREATE TABLE `tag` (
                 `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
@@ -54,16 +54,16 @@ class SchemaCreateCommand extends Command
                 `background_color` TEXT NOT NULL,
                 `created` TEXT NOT NULL,
                 `updated` TEXT
-            );'
-        );
+            );')
+        ;
 
         $pdo->query('CREATE TABLE `tasks_tags` (
                 `task_id` INTEGER NOT NULL,
                 `tag_id` INTEGER NOT NULL,
                 FOREIGN KEY (`task_id`) REFERENCES `task`(`id`) ON DELETE CASCADE,
                 FOREIGN KEY (`tag_id`) REFERENCES `tag`(`id`) ON DELETE CASCADE
-            );'
-        );
+            );')
+        ;
 
         $output->write('Schema created');
     }
