@@ -9,6 +9,7 @@ use Acme\Task\Provider\ConfigProvider;
 use Acme\Task\Provider\DatabaseProvider;
 use Acme\Task\Repository\TagRepository;
 use Acme\Task\Repository\TaskRepository;
+use Acme\Task\Repository\TasksTagsRepository;
 use Acme\Task\Service\TagService;
 use Acme\Task\Service\TaskService;
 use Silex\Application;
@@ -87,6 +88,10 @@ class Bootstrap
         $app['repository.tag'] = function () use ($app) {
             return new TagRepository($app['connection.sqlite']);
         };
+
+        $app['repository.tasks_tags'] = function () use ($app) {
+            return new TasksTagsRepository($app['connection.sqlite']);
+        };
     }
 
     /**
@@ -96,12 +101,16 @@ class Bootstrap
     {
         $app = $this->app;
 
-        $app['service.task'] = function () use ($app) {
-            return new TaskService($app['repository.task']);
-        };
-
         $app['service.tag'] = function () use ($app) {
             return new TagService($app['repository.tag']);
+        };
+
+        $app['service.task'] = function () use ($app) {
+            return new TaskService(
+                $app['repository.task'],
+                $app['repository.tasks_tags'],
+                $app['service.tag']
+            );
         };
     }
 

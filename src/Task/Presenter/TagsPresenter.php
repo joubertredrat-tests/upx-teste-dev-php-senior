@@ -14,7 +14,7 @@ class TagsPresenter
     /**
      * @var array<Tag>
      */
-    private $tags;
+    private $tags = [];
 
     /**
      * @param Tag $tag

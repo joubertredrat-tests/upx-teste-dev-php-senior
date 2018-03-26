@@ -7,6 +7,7 @@ use Acme\Task\Model\Task;
 use Acme\Task\Presenter\TaskPresenter;
 use Acme\Task\Presenter\TasksPresenter;
 use Acme\Task\Repository\TaskRepository;
+use Acme\Task\Repository\TasksTagsRepository;
 
 /**
  * Task Service
@@ -21,13 +22,30 @@ class TaskService
     private $taskRepository;
 
     /**
+     * @var TasksTagsRepository
+     */
+    private $tasksTagsRepository;
+
+    /**
+     * @var TagService
+     */
+    private $tagService;
+
+    /**
      * Task Service constructor
      *
      * @param TaskRepository $taskRepository
+     * @param TasksTagsRepository $tasksTagsRepository
+     * @param TagService $tagService
      */
-    public function __construct(TaskRepository $taskRepository)
-    {
+    public function __construct(
+        TaskRepository $taskRepository,
+        TasksTagsRepository $tasksTagsRepository,
+        TagService $tagService
+    ) {
         $this->taskRepository = $taskRepository;
+        $this->tasksTagsRepository = $tasksTagsRepository;
+        $this->tagService = $tagService;
     }
 
     /**
@@ -35,6 +53,7 @@ class TaskService
      * @return Task
      * @throws \ReflectionException
      * @throws TaskNotFoundError
+     * @throws \Acme\Exception\Tag\NotFoundError
      */
     public function getTask(int $id): Task
     {
@@ -49,6 +68,17 @@ class TaskService
             );
         }
 
+        $tags = $this->tasksTagsRepository->getTags($task);
+
+        foreach ($tags as $tagId) {
+            $tag = $this
+                ->tagService
+                ->getTag($tagId)
+            ;
+
+            $task->addTag($tag);
+        }
+
         return $task;
     }
 
@@ -57,6 +87,7 @@ class TaskService
      * @return TaskPresenter
      * @throws TaskNotFoundError
      * @throws \ReflectionException
+     * @throws \Acme\Exception\Tag\NotFoundError
      */
     public function getTaskApi(int $id): TaskPresenter
     {
@@ -66,13 +97,34 @@ class TaskService
     /**
      * @return array<Task>
      * @throws \ReflectionException
+     * @throws \Acme\Exception\Tag\NotFoundError
      */
     public function getAll(): array
     {
-        return $this
+        $return = [];
+
+        $tasks = $this
             ->taskRepository
             ->getAll()
         ;
+
+        /** @var Task $task */
+        foreach ($tasks as $task) {
+            $tags = $this->tasksTagsRepository->getTags($task);
+
+            foreach ($tags as $tagId) {
+                $tag = $this
+                    ->tagService
+                    ->getTag($tagId)
+                ;
+
+                $task->addTag($tag);
+            }
+
+            $return[] = $task;
+        }
+
+        return $return;
     }
 
     /**
@@ -94,31 +146,49 @@ class TaskService
     /**
      * @param string $title
      * @param string|null $description
+     * @param array $tags
      * @return Task
      * @throws \ReflectionException
+     * @throws \Acme\Exception\Tag\NotFoundError
      */
-    public function addTask(string $title, ?string $description): Task
+    public function addTask(string $title, ?string $description, array $tags): Task
     {
         $task = new Task();
         $task->setTitle($title);
         $task->setDescription($description);
         $task->setIsDone(false);
 
-        return $this
+        foreach ($tags as $tagId) {
+            $tag = $this->tagService->getTag($tagId);
+            $task->addTag($tag);
+        }
+
+        $task = $this
             ->taskRepository
             ->add($task)
         ;
+
+        $this
+            ->tasksTagsRepository
+            ->linkTags($task)
+        ;
+
+        return $task;
     }
 
     /**
      * @param string $title
      * @param string|null $description
+     * @param array $tags
      * @return TaskPresenter
      * @throws \ReflectionException
+     * @throws \Acme\Exception\Tag\NotFoundError
      */
-    public function addTaskApi(string $title, ?string $description): TaskPresenter
+    public function addTaskApi(string $title, ?string $description, array $tags): TaskPresenter
     {
-        return new TaskPresenter($this->addTask($title, $description));
+        return new TaskPresenter(
+            $this->addTask($title, $description, $tags)
+        );
     }
 
     /**
@@ -126,15 +196,18 @@ class TaskService
      * @param string|null $title
      * @param string|null $description
      * @param bool|null $isDone
+     * @param array $tags
      * @return Task
      * @throws TaskNotFoundError
      * @throws \ReflectionException
+     * @throws \Acme\Exception\Tag\NotFoundError
      */
     public function updateTask(
         int $id,
         ?string $title,
         ?string $description,
-        ?bool $isDone
+        ?bool $isDone,
+        array $tags
     ): Task {
         $task = $this->getTask($id);
 
@@ -150,10 +223,29 @@ class TaskService
             $task->setIsDone($isDone);
         }
 
-        return $this
+        $task = $this
             ->taskRepository
             ->update($task)
         ;
+
+        if ($tags) {
+            foreach ($tags as $tagId) {
+                $tag = $this->tagService->getTag($tagId);
+                $task->addTag($tag);
+            }
+
+            $this
+                ->tasksTagsRepository
+                ->unlinkTagsByTask($task)
+            ;
+
+            $this
+                ->tasksTagsRepository
+                ->linkTags($task)
+            ;
+        }
+
+        return $task;
     }
 
     /**
@@ -161,17 +253,22 @@ class TaskService
      * @param string|null $title
      * @param string|null $description
      * @param bool|null $isDone
+     * @param array $tags
      * @return TaskPresenter
      * @throws TaskNotFoundError
      * @throws \ReflectionException
+     * @throws \Acme\Exception\Tag\NotFoundError
      */
     public function updateTaskApi(
         int $id,
         ?string $title,
         ?string $description,
-        ?bool $isDone
+        ?bool $isDone,
+        array $tags
     ): TaskPresenter {
-        return new TaskPresenter($this->updateTask($id, $title, $description, $isDone));
+        return new TaskPresenter(
+            $this->updateTask($id, $title, $description, $isDone, $tags)
+        );
     }
 
     /**

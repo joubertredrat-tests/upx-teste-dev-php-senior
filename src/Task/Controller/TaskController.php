@@ -3,6 +3,7 @@
 namespace Acme\Task\Controller;
 
 use Acme\Exception\Api\InvalidRequestError;
+use Acme\Exception\Tag\NotFoundError as TagNotFoundError;
 use Acme\Exception\Task\NotFoundError as TaskNotFoundError;
 use Acme\Task\Service\TaskService;
 use Silex\ControllerCollection;
@@ -74,6 +75,7 @@ class TaskController implements ControllerProviderInterface
         try {
             $title = $request->get('title', null);
             $description = $request->get('description', null);
+            $tags = $request->get('tags');
 
             $errors = [];
 
@@ -85,6 +87,16 @@ class TaskController implements ControllerProviderInterface
                 $errors[] = 'The title field must have 3 or more characters';
             }
 
+            if (!is_array($tags)) {
+                $errors[] = 'The tags field must have empty array or with tags id';
+            }
+
+            foreach ($tags as $tagId) {
+                if (!is_int($tagId)) {
+                    $errors[] = "Tag in into tags array must be integer";
+                }
+            }
+
             if ($errors) {
                 throw new InvalidRequestError(
                     'Invalid request: ' . implode(', ', $errors)
@@ -94,10 +106,13 @@ class TaskController implements ControllerProviderInterface
             /** @var TaskService $service */
             $service = $app['service.task'];
 
-            $taskPresenter = $service->addTaskApi($title, $description);
+            $taskPresenter = $service->addTaskApi($title, $description, $tags);
             $response = $taskPresenter->toArray();
             $statusCode = Response::HTTP_CREATED;
         } catch (InvalidRequestError $e) {
+            $response['message'] = $e->getMessage();
+            $statusCode = Response::HTTP_BAD_REQUEST;
+        } catch (TagNotFoundError $e) {
             $response['message'] = $e->getMessage();
             $statusCode = Response::HTTP_BAD_REQUEST;
         } catch (\Throwable $e) {
@@ -147,6 +162,7 @@ class TaskController implements ControllerProviderInterface
             $title = $request->get('title', null);
             $description = $request->get('description', null);
             $isDone = $request->get('isDone', null);
+            $tags = $request->get('tags', []);
 
             if (!is_null($title) && strlen($title) < 3) {
                 $errors[] = 'The title field must have 3 or more characters';
@@ -154,6 +170,12 @@ class TaskController implements ControllerProviderInterface
 
             if (!is_null($isDone) && !is_bool($isDone)) {
                 $errors[] = 'The isDone field must be boolean';
+            }
+
+            foreach ($tags as $tagId) {
+                if (!is_int($tagId)) {
+                    $errors[] = "Tag in into tags array must be integer";
+                }
             }
 
             if ($errors) {
@@ -165,9 +187,12 @@ class TaskController implements ControllerProviderInterface
             /** @var TaskService $service */
             $service = $app['service.task'];
 
-            $taskPresenter = $service->updateTaskApi($id, $title, $description, $isDone);
+            $taskPresenter = $service->updateTaskApi($id, $title, $description, $isDone, $tags);
             $response = $taskPresenter->toArray();
             $statusCode = Response::HTTP_OK;
+        } catch (InvalidRequestError $e) {
+            $response['message'] = $e->getMessage();
+            $statusCode = Response::HTTP_BAD_REQUEST;
         } catch (TaskNotFoundError $e) {
             $response['message'] = $e->getMessage();
             $statusCode = Response::HTTP_NOT_FOUND;

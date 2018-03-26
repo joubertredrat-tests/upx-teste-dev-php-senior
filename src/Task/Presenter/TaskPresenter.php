@@ -49,11 +49,19 @@ class TaskPresenter
             null
         ;
 
+        $tags = [];
+
+        foreach ($this->task->getTags() as $tag) {
+            $tagPresenter = new TagPresenter($tag);
+            $tags[] = $tagPresenter->toArray();
+        }
+
         return [
             'id' => $this->task->getId(),
             'title' => $this->task->getTitle(),
             'description' => $this->task->getDescription(),
             'isDone' => $this->task->isDone(),
+            'tags' => $tags,
             'created' => $created,
             'updated' => $updated,
         ];

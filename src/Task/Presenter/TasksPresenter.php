@@ -14,7 +14,7 @@ class TasksPresenter
     /**
      * @var array<Task>
      */
-    private $tasks;
+    private $tasks = [];
 
     /**
      * @param Task $task

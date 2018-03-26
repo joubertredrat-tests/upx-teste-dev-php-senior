@@ -89,6 +89,7 @@ class SqliteDriver implements DriverInterface
         }
 
         $Pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+        $Pdo->query("PRAGMA foreign_keys = ON");
 
         return $Pdo;
     }
