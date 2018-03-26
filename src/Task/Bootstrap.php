@@ -5,6 +5,7 @@ namespace Acme\Task;
 use Acme\Task\Controller\TagController;
 use Acme\Task\Controller\TaskController;
 use Acme\Task\Middleware\ApiRequestMiddleware;
+use Acme\Task\Provider\CommandProvider;
 use Acme\Task\Provider\ConfigProvider;
 use Acme\Task\Provider\DatabaseProvider;
 use Acme\Task\Repository\TagRepository;
@@ -66,6 +67,9 @@ class Bootstrap
             )
             ->register(
                 new ConsoleServiceProvider()
+            )
+            ->register(
+                new CommandProvider()
             )
         ;
     }

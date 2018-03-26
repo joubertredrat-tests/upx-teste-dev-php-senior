@@ -76,22 +76,22 @@ class SqliteDriver implements DriverInterface
      */
     public function getConnection(): \PDO
     {
-        $Pdo = new \PDO($this->getDsn());
+        $pdo = new \PDO($this->getDsn());
 
-        if(!$Pdo) {
+        if(!$pdo) {
             throw new ConnectionException(
                 sprintf(
                     'Fail to connect on sqlite dsn %s: %s',
                     $this->getDsn(),
-                    $Pdo->errorInfo()
+                    $pdo->errorInfo()
                 )
             );
         }
 
-        $Pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-        $Pdo->query("PRAGMA foreign_keys = ON");
+        $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+        $pdo->query("PRAGMA foreign_keys = ON");
 
-        return $Pdo;
+        return $pdo;
     }
 
     /**
