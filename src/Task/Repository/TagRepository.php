@@ -88,7 +88,7 @@ class TagRepository extends AbstractRepository
                 new \DateTime('now')
             );
 
-            $query = "INSERT INTO tag (name, textColor, backgroundColor, created) "
+            $query = "INSERT INTO tag (name, text_color, background_color, created) "
                 . "VALUES (:name, :textColor, :backgroundColor, :created)";
 
             $statement = $pdo->prepare($query);
@@ -105,7 +105,7 @@ class TagRepository extends AbstractRepository
             $statement->bindParam(
                 ":backgroundColor",
                 $tag->getBackgroundColor(),
-                \PDO::PARAM_BOOL
+                \PDO::PARAM_STR
             );
             $statement->bindParam(
                 ":created",
@@ -142,7 +142,7 @@ class TagRepository extends AbstractRepository
             $statement = $pdo->prepare($query);
             $statement->bindParam(
                 ":name",
-                $tag->getTitle(),
+                $tag->getName(),
                 \PDO::PARAM_STR
             );
             $statement->bindParam(
@@ -211,8 +211,8 @@ class TagRepository extends AbstractRepository
         $reflection->setAccessible(false);
 
         $tag->setName($data['name']);
-        $tag->setTextColor($data['textColor']);
-        $tag->setBackgroundColor($data['backgroundColor']);
+        $tag->setTextColor($data['text_color']);
+        $tag->setBackgroundColor($data['background_color']);
         $tag->setCreated(
             new \DateTime($data['created'])
         );

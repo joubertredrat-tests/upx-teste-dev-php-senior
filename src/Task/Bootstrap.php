@@ -2,11 +2,14 @@
 
 namespace Acme\Task;
 
+use Acme\Task\Controller\TagController;
 use Acme\Task\Controller\TaskController;
 use Acme\Task\Middleware\ApiRequestMiddleware;
 use Acme\Task\Provider\ConfigProvider;
 use Acme\Task\Provider\DatabaseProvider;
+use Acme\Task\Repository\TagRepository;
 use Acme\Task\Repository\TaskRepository;
+use Acme\Task\Service\TagService;
 use Acme\Task\Service\TaskService;
 use Silex\Application;
 
@@ -80,6 +83,10 @@ class Bootstrap
         $app['repository.task'] = function () use ($app) {
             return new TaskRepository($app['connection.sqlite']);
         };
+
+        $app['repository.tag'] = function () use ($app) {
+            return new TagRepository($app['connection.sqlite']);
+        };
     }
 
     /**
@@ -92,6 +99,10 @@ class Bootstrap
         $app['service.task'] = function () use ($app) {
             return new TaskService($app['repository.task']);
         };
+
+        $app['service.tag'] = function () use ($app) {
+            return new TagService($app['repository.tag']);
+        };
     }
 
     /**
@@ -102,6 +113,7 @@ class Bootstrap
         $this
             ->app
             ->mount('/tasks', new TaskController())
+            ->mount('/tags', new TagController())
         ;
     }
 }

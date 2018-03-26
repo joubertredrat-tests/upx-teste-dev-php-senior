@@ -32,9 +32,9 @@ class Tag
     private $backgroundColor;
 
     /**
-     * @return int
+     * @return int|null
      */
-    public function getId(): int
+    public function getId(): ?int
     {
         return $this->id;
     }
@@ -87,5 +87,14 @@ class Tag
     public function setBackgroundColor(string $backgroundColor): void
     {
         $this->backgroundColor = $backgroundColor;
+    }
+
+    /**
+     * @param string|null $color
+     * @return bool
+     */
+    public static function isHexColor(?string $color): bool
+    {
+        return (bool) preg_match("/([a-fA-F0-9]{3}){1,2}/", $color);
     }
 }

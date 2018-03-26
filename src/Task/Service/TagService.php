@@ -190,7 +190,7 @@ class TagService
      * @throws TagNotFoundError
      * @throws \ReflectionException
      */
-    public function deleteTask(int $id): bool
+    public function deleteTag(int $id): bool
     {
         $tag = $this->getTag($id);
 
